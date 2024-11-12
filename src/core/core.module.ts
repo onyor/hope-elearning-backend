@@ -11,7 +11,7 @@ import { StorageModule } from './storage/storage.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['.env.development.local'],
+      envFilePath: ['.env.local'],
     }),
     EventEmitterModule.forRoot(),
     DatabaseModule,

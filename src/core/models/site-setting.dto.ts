@@ -5,6 +5,8 @@ export class SiteSettingDto {
 
   termsAndConditions?: string;
 
+  contactInfo?: number;
+
   constructor(partial: Partial<SiteSettingDto> = {}) {
     Object.assign(this, partial);
   }

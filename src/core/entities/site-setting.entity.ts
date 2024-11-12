@@ -16,11 +16,16 @@ export class SiteSettingEntity extends AuditingEntity {
   @Column({ name: 'terms_and_conditions', type: 'text', nullable: true })
   termsAndConditions?: string | null;
 
+  // Yeni eklenen kolon
+  @Column({ name: 'contact_info', type: 'text', nullable: true })
+  contactInfo?: number | null;
+
   toDto() {
     return new SiteSettingDto({
       aboutUs: this.aboutUs ?? undefined,
       privacyPolicy: this.privacyPolicy ?? undefined,
       termsAndConditions: this.termsAndConditions ?? undefined,
+      contactInfo: this.contactInfo ?? undefined, // DTO'ya ekledik
     });
   }
 }

@@ -63,6 +63,8 @@ export class LessonEntity extends AuditingEntity {
         wordCount: this.wordCount,
         sortOrder: this.sortOrder,
         type: this.type,
+        lexical: this.lexical ?? undefined,
+        html: this.html ?? undefined,
         audit: this.toAudit(),
       });
     }

@@ -43,6 +43,8 @@ export class CourseController {
     @Res({ passthrough: true }) resp: Response,
   ) {
     const result = await this.courseService.findBySlug(slug);
+
+    console.log('result', result);
     if (!result || result.status !== CourseStatus.PUBLISHED) {
       resp.status(HttpStatus.NO_CONTENT);
       return undefined;

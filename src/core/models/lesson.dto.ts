@@ -17,10 +17,8 @@ export class LessonDto {
   trial: boolean;
   type: LessonType;
 
-  @Expose({ groups: ['lesson-detail'] })
   lexical?: string;
 
-  @Expose({ groups: ['lesson-detail'] })
   html?: string;
 
   wordCount: number;
