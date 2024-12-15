@@ -14,10 +14,11 @@ import { AuthenticationMiddleware } from '../middlewares/authentication.middlewa
 import { FirebaseService } from './firebase.service';
 import { JwtVerificationService } from './jwt-verification.service';
 import { SecurityContextService } from './security-context.service';
+import { CacheModule } from '../cache/cache.module';
 
 @Global()
 @Module({
-  imports: [UserModule],
+  imports: [UserModule, CacheModule],
   providers: [
     {
       provide: AsyncLocalStorage,
@@ -47,6 +48,7 @@ export class SecurityModule implements NestModule {
       .apply(AuthenticationMiddleware)
       .exclude({ path: '/content/:path*', method: RequestMethod.GET })
       .exclude({ path: '/auth/verify-email', method: RequestMethod.POST })
+      .exclude({ path: '/auth/verify-login', method: RequestMethod.POST })
       .forRoutes('*');
   }
 }

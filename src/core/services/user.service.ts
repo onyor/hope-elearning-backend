@@ -1,5 +1,6 @@
 import {
   PageDto,
+  StudentStatus,
   UserCreateDto,
   UserDto,
   UserQueryDto,
@@ -23,6 +24,10 @@ export interface UserService {
   findByUsername(username: string): Promise<UserDto | undefined>;
 
   find(query: UserQueryDto): Promise<PageDto<UserDto>>;
+
+  updateStudentStatus(userId: string, status: StudentStatus): Promise<void>;
+
+  getStudentStatus(userId: string): Promise<StudentStatus | null>;
 }
 
 export const USER_SERVICE = 'UserService';

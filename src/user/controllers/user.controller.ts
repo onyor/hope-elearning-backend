@@ -3,6 +3,7 @@ import {
   CourseDto,
   EnrolledCourseDto,
   QueryDto,
+  StudentStatus,
   UserDto,
   UserMetaDto,
   UserUpdateDto,
@@ -32,7 +33,7 @@ import {
   Res,
   SerializeOptions,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 
 @ApiTags('User')

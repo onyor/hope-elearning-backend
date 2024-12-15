@@ -6,6 +6,7 @@ import { DatabaseModule } from './database/database.module';
 import { DomainExceptionFilter } from './filters';
 import { SecurityModule } from './security/security.module';
 import { StorageModule } from './storage/storage.module';
+import { CacheModule } from './cache/cache.module'; // CacheModule'u içe aktarın
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { StorageModule } from './storage/storage.module';
     DatabaseModule,
     SecurityModule,
     StorageModule,
+    CacheModule,
   ],
   providers: [
     {

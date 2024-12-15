@@ -1,5 +1,6 @@
 export * from './tag.service';
 export * from './user.service';
+export * from './user.login.history.service';
 
 export * from './post-author.service';
 export * from './post-revision.service';

@@ -9,6 +9,13 @@ export enum UserRole {
   OWNER = 'owner',
 }
 
+export enum StudentStatus {
+  ATPL = 'ATPL',
+  TPL = 'TPL',
+  ATPL_GRADUATE = 'ATPL_MEZUNU',
+  CAPTAIN = 'KAPTAN',
+}
+
 export class UserDto {
   id: string;
   nickname: string;
@@ -25,6 +32,8 @@ export class UserDto {
   expiredAt: number;
 
   audit?: AuditingDto;
+
+  status: StudentStatus;
 
   constructor(partial: Partial<UserDto> = {}) {
     Object.assign(this, partial);
