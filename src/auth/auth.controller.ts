@@ -120,4 +120,9 @@ export class AuthController {
       }
     }
   }
+
+  @Post('refresh')
+  async refresh(@Body('token') token: string) {
+    return await this.firebaseService.refreshAccessToken(token);
+  }
 }
