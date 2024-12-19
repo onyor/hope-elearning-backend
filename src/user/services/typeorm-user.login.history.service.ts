@@ -17,23 +17,18 @@ export class TypeormUserLoginHistoryService {
    * @param deviceId Cihaz ID'si
    * @returns Kullanıcının giriş geçmişi
    */
-  async findByUserIdAndDeviceId(
-    userId: string,
-    deviceId: string,
-  ): Promise<UserLoginHistoryEntity | undefined> {
-    const history = await this.userLoginHistoryRepository.findOne({
-      where: { userId, deviceId },
+  async findByUserId(userId: string): Promise<UserLoginHistoryEntity[]> {
+    const history = await this.userLoginHistoryRepository.findBy({
+      userId: userId,
     });
-    return history || undefined; // Null kontrolü yaparak undefined döndür
+    return history;
   }
 
-  async findByDeviceId(
-    deviceId: string,
-  ): Promise<UserLoginHistoryEntity | undefined> {
-    const history = await this.userLoginHistoryRepository.findOne({
-      where: { deviceId },
+  async findByDeviceId(deviceId: string): Promise<UserLoginHistoryEntity[]> {
+    const history = await this.userLoginHistoryRepository.findBy({
+      deviceId: deviceId,
     });
-    return history || undefined; // Null kontrolü yaparak undefined döndür
+    return history;
   }
 
   /**
@@ -75,7 +70,9 @@ export class TypeormUserLoginHistoryService {
    * @returns Güncellenmiş giriş geçmişi veya hata
    */
   async updateEndDate(userId: string, deviceId: string): Promise<void> {
-    const history = await this.findByUserIdAndDeviceId(userId, deviceId);
+    const history = (await this.findByUserId(userId)).find(
+      (d) => d.deviceId === deviceId,
+    );
     if (history) {
       history.lastLoginDate = new Date();
       await this.userLoginHistoryRepository.save(history);

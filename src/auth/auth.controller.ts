@@ -36,6 +36,7 @@ export class AuthController {
       token: string;
       uid: string;
       deviceId: string;
+      //yeni cihaza geçmek istedi durumu
       isDeviceApproved?: boolean;
     },
   ) {
@@ -47,61 +48,38 @@ export class AuthController {
         'userDeviceList',
       ) || [];
 
-    // Cache'de kullanıcı ve cihaz eşleşmesi var mı?
-    const existingCacheEntry = userDeviceList.find(
-      (entry) => entry.userId === uid && entry.deviceId === deviceId,
+    const existingCacheDeviceUsers = userDeviceList.filter(
+      (entry) => entry.deviceId === deviceId,
     );
 
-    if (existingCacheEntry) {
+    const existingCacheDeviceUserPair = existingCacheDeviceUsers.find(
+      (entry) => entry.userId === uid,
+    );
+
+    if (existingCacheDeviceUserPair) {
       return {
         success: true,
-        message: 'Login başarılı (Cache).',
+        message: 'Login başarılı.',
         userId: uid,
         deviceId,
       };
     }
 
-    // Veritabanı kontrolü
-    const existingDbEntry =
-      await this.userLoginHistoryService.findByUserIdAndDeviceId(uid, deviceId);
-
-    if (existingDbEntry) {
-      // Cache'e ekle
-      this.cacheManager.addToCache(uid, deviceId);
-
+    //demek ki bu cihazı başka kullanıcı kullanıyor
+    if (existingCacheDeviceUsers.length > 0) {
       return {
-        success: true,
-        message: 'Login başarılı (Database).',
-        userId: uid,
-        deviceId,
+        success: false,
+        message: 'Bu cihaz başka bir kullanıcıya ait. Bizimle iletişime geçin.',
+        requiresApproval: false,
       };
     }
 
-    // Cihaz başka bir kullanıcıya mı ait?
-    const existingDeviceUser =
-      await this.userLoginHistoryService.findByDeviceId(deviceId);
+    const existingCacheUserDevices = userDeviceList.filter(
+      (entry) => entry.userId === uid,
+    );
 
-    if (existingDeviceUser && existingDeviceUser.userId !== uid) {
-      if (!isDeviceApproved) {
-        return {
-          success: false,
-          message:
-            'Bu cihaz başka bir kullanıcıya ait. Bizimle iletişime geçin.',
-          requiresApproval: false,
-        };
-      }
-    }
-
-    // Yeni cihaz durumu
-    if (!existingDeviceUser) {
-      if (!isDeviceApproved) {
-        return {
-          success: false,
-          message:
-            'Yeni bir cihazdan giriş yapıyorsunuz. Hesabınızı bu cihaza aktarmak istiyor musunuz?',
-          requiresApproval: true,
-        };
-      } else {
+    if (existingCacheUserDevices.length > 0) {
+      if (isDeviceApproved) {
         // Kullanıcının cache'deki eski cihaz kaydını temizle
         this.cacheManager.removeUserFromCache(uid);
 
@@ -117,7 +95,76 @@ export class AuthController {
           userId: uid,
           deviceId,
         };
-      }
+      } else
+        return {
+          success: false,
+          message:
+            'Yeni bir cihazdan giriş yapıyorsunuz. Hesabınızı bu cihaza aktarmak istiyor musunuz?',
+          requiresApproval: true,
+        };
     }
+
+    // Veritabanı kontrolü
+    const existingDbDeviceUsers =
+      await this.userLoginHistoryService.findByDeviceId(deviceId);
+
+    const existingDbDeviceUserPair = existingDbDeviceUsers.find(
+      (entry) => entry.userId === uid,
+    );
+
+    if (existingCacheDeviceUserPair) {
+      this.cacheManager.addToCache(uid, deviceId);
+
+      return {
+        success: true,
+        message: 'Login başarılı.',
+        userId: uid,
+        deviceId,
+      };
+    }
+
+    if (existingDbDeviceUsers.length > 0) {
+      return {
+        success: false,
+        message: 'Bu cihaz başka bir kullanıcıya ait. Bizimle iletişime geçin.',
+        requiresApproval: false,
+      };
+    }
+
+    const existingDbUserDevices =
+      await this.userLoginHistoryService.findByUserId(uid);
+
+    if (existingDbUserDevices.length > 0) {
+      if (isDeviceApproved) {
+        // Kullanıcının cache'deki eski cihaz kaydını temizle
+        this.cacheManager.removeUserFromCache(uid);
+
+        // Yeni cihaz için giriş kaydını oluştur
+        await this.userLoginHistoryService.createOrUpdateHistory(uid, deviceId);
+
+        // Cache'e yeni cihazı ekle
+        this.cacheManager.addToCache(uid, deviceId);
+
+        return {
+          success: true,
+          message: 'Yeni cihaz kaydedildi ve giriş başarılı.',
+          userId: uid,
+          deviceId,
+        };
+      } else
+        return {
+          success: false,
+          message:
+            'Yeni bir cihazdan giriş yapıyorsunuz. Hesabınızı bu cihaza aktarmak istiyor musunuz?',
+          requiresApproval: true,
+        };
+    }
+
+    return {
+      success: true,
+      message: 'Yeni cihaz kaydedildi ve giriş başarılı.',
+      userId: uid,
+      deviceId,
+    };
   }
 }

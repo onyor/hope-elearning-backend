@@ -6,10 +6,7 @@ export interface UserLoginHistoryService {
    * @param userId Kullanıcı ID'si
    * @param deviceId Cihaz ID'si
    */
-  findByUserIdAndDeviceId(
-    userId: string,
-    deviceId: string,
-  ): Promise<UserLoginHistoryEntity | undefined>;
+  findByUserId(userId: string): Promise<UserLoginHistoryEntity[]>;
 
   /**
    * Cihaz kimliğine göre giriş geçmişi arar.
