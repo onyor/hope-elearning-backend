@@ -23,7 +23,7 @@ export class CourseCreateDto {
   level: CourseLevel;
 
   @IsNumber()
-  categoryId: number;
+  subjectId: number;
 
   @IsArray()
   @ArrayMinSize(1, { message: 'Required at least one author' })

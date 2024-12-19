@@ -37,11 +37,15 @@ import { TypeormCourseService } from './services/typeorm-course.service';
 import { TypeormLessonRevisionService } from './services/typeorm-lesson-revision.service';
 import { TypeormLessonService } from './services/typeorm-lesson.service';
 import { TypeormQuizService } from './services/typeorm-quiz.service';
+import { SubjectEntity } from '@/core/entities/subject-entity';
+import { TypeormSubjectService } from './services/typeorm-subject.service';
+import { SUBJECT_SERVICE } from '@/core/services/subject.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       CategoryEntity,
+      SubjectEntity,
       CourseEntity,
       CourseMetaEntity,
       CourseReviewEntity,
@@ -60,6 +64,10 @@ import { TypeormQuizService } from './services/typeorm-quiz.service';
     {
       provide: CATEGORY_SERVICE,
       useClass: TypeormCategoryService,
+    },
+    {
+      provide: SUBJECT_SERVICE,
+      useClass: TypeormSubjectService,
     },
     {
       provide: COURSE_SERVICE,

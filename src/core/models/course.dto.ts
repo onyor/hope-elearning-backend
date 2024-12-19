@@ -1,9 +1,9 @@
 import { Expose, Transform } from 'class-transformer';
 import { AuditingDto } from './auditing.dto';
-import { CategoryDto } from './category.dto';
 import { ChapterDto } from './chapter.dto';
 import { UserDto } from './user.dto';
 import { CourseMetaDto } from './course-meta.dto';
+import { SubjectDto } from './subject.dto';
 
 export enum CourseStatus {
   DRAFT = 'draft',
@@ -37,7 +37,7 @@ export class CourseDto {
   access: CourseAccess;
   status: CourseStatus;
   publishedAt?: string;
-  category?: CategoryDto;
+  subject?: SubjectDto;
   authors: UserDto[];
 
   @Expose({ groups: ['detail'] })

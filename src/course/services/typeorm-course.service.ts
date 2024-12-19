@@ -1,9 +1,9 @@
 import { DomainError } from '@/common/errors';
 import { normalizeSlug } from '@/common/utils';
-import { CategoryEntity } from '@/core/entities/category.entity';
 import { CourseAuthorEntity } from '@/core/entities/course-author.entity';
 import { CourseMetaEntity } from '@/core/entities/course-meta.entity';
 import { CourseEntity } from '@/core/entities/course.entity';
+import { SubjectEntity } from '@/core/entities/subject-entity';
 import { AuditEvent } from '@/core/events';
 import {
   CourseCreateDto,
@@ -25,19 +25,19 @@ export class TypeormCourseService implements CourseService {
   constructor(
     private dataSource: DataSource,
     private eventEmitter: EventEmitter2,
-    @InjectRepository(CategoryEntity)
-    private categoryRepo: Repository<CategoryEntity>,
+    @InjectRepository(SubjectEntity)
+    private subjectRepo: Repository<SubjectEntity>,
     @InjectRepository(CourseEntity)
     private courseRepo: Repository<CourseEntity>,
   ) {}
 
   async create(values: CourseCreateDto): Promise<number> {
     if (
-      !(await this.categoryRepo.existsBy({
-        id: values.categoryId,
+      !(await this.subjectRepo.existsBy({
+        id: values.subjectId,
       }))
     ) {
-      throw new DomainError('Category not found');
+      throw new DomainError('Subject not found');
     }
 
     if (values.authors.length === 0) {
@@ -48,7 +48,7 @@ export class TypeormCourseService implements CourseService {
       const result = await em.insert(CourseEntity, {
         title: values.title,
         level: values.level,
-        category: { id: values.categoryId },
+        subject: { id: values.subjectId },
         slug: await normalizeSlug({
           value: values.slug,
           exists: (v) => {
@@ -90,11 +90,11 @@ export class TypeormCourseService implements CourseService {
 
   async update(values: CourseUpdateDto): Promise<void> {
     if (
-      !(await this.categoryRepo.existsBy({
-        id: values.categoryId,
+      !(await this.subjectRepo.existsBy({
+        id: values.subjectId,
       }))
     ) {
-      throw new DomainError('Category not found');
+      throw new DomainError('Subject not found');
     }
 
     const courseId = values.id;
@@ -119,7 +119,7 @@ export class TypeormCourseService implements CourseService {
         description: values.description,
         access: values.access,
         level: values.level,
-        category: { id: values.categoryId },
+        subject: { id: values.subjectId },
         slug:
           entity.slug !== values.slug
             ? await normalizeSlug({
@@ -206,7 +206,7 @@ export class TypeormCourseService implements CourseService {
   async findById(id: number): Promise<CourseDto | undefined> {
     const entity = await this.courseRepo
       .createQueryBuilder('course')
-      .leftJoinAndSelect('course.category', 'category')
+      .leftJoinAndSelect('course.subject', 'subject')
       .leftJoinAndSelect('course.meta', 'meta')
       .leftJoinAndSelect('course.authors', 'course_author')
       .leftJoinAndSelect('course_author.author', 'author')
@@ -221,7 +221,7 @@ export class TypeormCourseService implements CourseService {
   async findBySlug(slug: string): Promise<CourseDto | undefined> {
     const entity = await this.courseRepo
       .createQueryBuilder('course')
-      .leftJoinAndSelect('course.category', 'category')
+      .leftJoinAndSelect('course.subject', 'subject')
       .leftJoinAndSelect('course.meta', 'meta')
       .leftJoinAndSelect('course.authors', 'course_author')
       .leftJoinAndSelect('course_author.author', 'author')
@@ -237,13 +237,13 @@ export class TypeormCourseService implements CourseService {
   async findRelated(slug: string, limit: number): Promise<CourseDto[]> {
     const entities = await this.courseRepo
       .createQueryBuilder('course')
-      .leftJoinAndSelect('course.category', 'category')
+      .leftJoinAndSelect('course.subject', 'subject')
       .leftJoinAndSelect('course.meta', 'meta')
       .leftJoinAndSelect('course.authors', 'course_author')
       .leftJoinAndSelect('course_author.author', 'author')
       .where('course.slug != :slug', { slug })
       .andWhere(
-        'course.category_id = (SELECT category_id FROM el_course WHERE slug = :slug)',
+        'course.subject_id = (SELECT subject_id FROM el_course WHERE slug = :slug)',
         { slug },
       )
       .andWhere('course.status = :status', { status: CourseStatus.PUBLISHED })
@@ -257,7 +257,7 @@ export class TypeormCourseService implements CourseService {
     const { limit, offset } = QueryDto.getPageable(query);
 
     const baseQuery = this.courseRepo.createQueryBuilder('course');
-    // .leftJoinAndSelect('course.category', 'category')
+    // .leftJoinAndSelect('course.subject', 'subject')
     // .leftJoinAndSelect('course.meta', 'meta')
     // .leftJoinAndSelect('course.authors', 'course_author')
     // .leftJoinAndSelect('course_author.author', 'author');
@@ -284,9 +284,9 @@ export class TypeormCourseService implements CourseService {
       });
     }
 
-    if (query.category) {
-      baseQuery.andWhere('category.slug = :category', {
-        category: query.category,
+    if (query.subject) {
+      baseQuery.andWhere('subject.slug = :subject', {
+        subject: query.subject,
       });
     }
 
@@ -315,7 +315,7 @@ export class TypeormCourseService implements CourseService {
     const dataQuery = baseQuery.clone();
 
     idQuery
-      .leftJoin('course.category', 'category')
+      .leftJoin('course.subject', 'subject')
       .leftJoin('course.meta', 'meta')
       .leftJoin('course.authors', 'course_author');
 
@@ -332,7 +332,7 @@ export class TypeormCourseService implements CourseService {
     if (idList.length > 0) {
       dataQuery
         .andWhereInIds(idList.map((e) => e.id))
-        .leftJoinAndSelect('course.category', 'category')
+        .leftJoinAndSelect('course.subject', 'subject')
         .leftJoinAndSelect('course.meta', 'meta')
         .leftJoinAndSelect('course.authors', 'course_author')
         .leftJoinAndSelect('course_author.author', 'author');

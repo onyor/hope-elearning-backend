@@ -38,7 +38,7 @@ export class CourseUpdateDto {
   access?: CourseAccess;
 
   @IsNumber()
-  categoryId: number;
+  subjectId: number;
 
   @IsOptional()
   @IsArray()

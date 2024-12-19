@@ -1,3 +1,4 @@
+// Updated Course Entity
 import {
   Column,
   Entity,
@@ -9,10 +10,10 @@ import {
 } from 'typeorm';
 import { CourseAccess, CourseDto, CourseLevel, CourseStatus } from '../models';
 import { AuditingEntity } from './auditing.entity';
-import { CategoryEntity } from './category.entity';
 import { ChapterEntity } from './chapter.entity';
 import { CourseAuthorEntity } from './course-author.entity';
 import { CourseMetaEntity } from './course-meta.entity';
+import { SubjectEntity } from './subject-entity';
 
 @Entity({ name: 'course' })
 export class CourseEntity extends AuditingEntity {
@@ -68,9 +69,9 @@ export class CourseEntity extends AuditingEntity {
   @Column({ name: 'published_by', type: 'varchar', nullable: true })
   publishedBy?: string | null;
 
-  @ManyToOne(() => CategoryEntity)
-  @JoinColumn({ name: 'category_id' })
-  category?: CategoryEntity;
+  @ManyToOne(() => SubjectEntity)
+  @JoinColumn({ name: 'subject_id' })
+  subject?: SubjectEntity;
 
   @OneToOne(() => CourseMetaEntity, (type) => type.course)
   meta?: CourseMetaEntity;
@@ -92,7 +93,7 @@ export class CourseEntity extends AuditingEntity {
         level: this.level,
         access: this.access,
         status: this.status,
-        category: this.category?.toDto(),
+        subject: this.subject?.toDto(),
         audit: this.toAudit(),
       });
     }
@@ -108,7 +109,7 @@ export class CourseEntity extends AuditingEntity {
       access: this.access,
       status: this.status,
       publishedAt: this.publishedAt?.toISOString(),
-      category: this.category?.toDto(),
+      subject: this.subject?.toDto(),
       authors: this.authors
         ?.sort((a, b) => a.sortOrder - b.sortOrder)
         .map((e) => e.author.toDto()),
