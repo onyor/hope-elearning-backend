@@ -1,4 +1,3 @@
-// Subject Entity
 import {
   Column,
   Entity,
@@ -6,6 +5,8 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { CategoryEntity } from './category.entity';
 import { CourseEntity } from './course.entity';
@@ -27,6 +28,12 @@ export class SubjectEntity {
 
   @OneToMany(() => CourseEntity, (course) => course.subject)
   courses: CourseEntity[];
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
+  updatedAt: Date;
 
   toDto() {
     return {

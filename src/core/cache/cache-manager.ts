@@ -17,7 +17,6 @@ export class CacheManager implements OnApplicationBootstrap {
   }
 
   async onApplicationBootstrap(): Promise<void> {
-    console.log('CacheManager başlatılıyor...');
     await this.initializeCacheFromDB(); // Cache'i doldur
   }
 
@@ -48,7 +47,6 @@ export class CacheManager implements OnApplicationBootstrap {
       this.getCache<{ userId: string; deviceId: string }[]>('userDeviceList');
 
     if (!userDeviceList || userDeviceList.length === 0) {
-      console.log('Cache boş, veritabanından dolduruluyor...');
       const userLoginHistories =
         await this.loginHistoryService.findWithNullLastLoginDate(); // Yeni metod
       const cacheData = userLoginHistories.map((history) => ({

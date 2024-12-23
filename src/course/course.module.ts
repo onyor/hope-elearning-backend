@@ -24,6 +24,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CategoryAdminController } from './controllers/category-admin.controller';
 import { CategoryController } from './controllers/category.controller';
+import { SubjectController } from './controllers/subject.controller';
 import { ChapterAdminController } from './controllers/chapter-admin.controller';
 import { CourseAdminController } from './controllers/course-admin.controller';
 import { CourseController } from './controllers/course.controller';
@@ -97,6 +98,7 @@ import { SUBJECT_SERVICE } from '@/core/services/subject.service';
   controllers: [
     CategoryAdminController,
     CategoryController,
+    SubjectController,
     CourseAdminController,
     CourseController,
     ChapterAdminController,
