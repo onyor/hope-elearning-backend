@@ -9,7 +9,7 @@ export enum UserRole {
   OWNER = 'owner',
 }
 
-export enum StudentStatus {
+export enum Title {
   ATPL = 'ATPL',
   TPL = 'TPL',
   ATPL_GRADUATE = 'ATPL_MEZUNU',
@@ -33,7 +33,7 @@ export class UserDto {
 
   audit?: AuditingDto;
 
-  status: StudentStatus;
+  status: Title;
 
   constructor(partial: Partial<UserDto> = {}) {
     Object.assign(this, partial);

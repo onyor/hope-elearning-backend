@@ -4,7 +4,7 @@ import { UserEntity } from '@/core/entities/user.entity';
 import {
   PageDto,
   QueryDto,
-  StudentStatus,
+  Title,
   UserCreateDto,
   UserDto,
   UserQueryDto,
@@ -194,24 +194,21 @@ export class TypeormUserService implements UserService, OnApplicationBootstrap {
     });
   }
 
-  async updateStudentStatus(
-    userId: string,
-    status: StudentStatus,
-  ): Promise<void> {
+  async updateTitle(userId: string, status: Title): Promise<void> {
     const exists = await this.userRepo.existsBy({ id: userId });
     if (!exists) {
       throw new DomainError('User not found');
     }
 
     await this.userRepo.update(userId, {
-      studentStatus: status,
+      title: status,
     });
   }
 
-  async getStudentStatus(userId: string): Promise<StudentStatus | null> {
+  async getTitle(userId: string): Promise<Title | null> {
     const user = await this.userRepo.findOne({
       where: { id: userId },
-      select: ['id', 'studentStatus'], // Hem id hem durumu seç
+      select: ['id', 'title'], // Hem id hem durumu seç
     });
 
     if (!user) {
@@ -219,6 +216,6 @@ export class TypeormUserService implements UserService, OnApplicationBootstrap {
       throw new DomainError('User not found');
     }
 
-    return user.studentStatus || null;
+    return user.title || null;
   }
 }

@@ -37,7 +37,6 @@ export class CourseDto {
   access: CourseAccess;
   status: CourseStatus;
   publishedAt?: string;
-  subject?: SubjectDto;
   authors: UserDto[];
 
   @Expose({ groups: ['detail'] })
@@ -45,6 +44,8 @@ export class CourseDto {
 
   meta?: CourseMetaDto;
   audit?: AuditingDto;
+
+  subject?: SubjectDto;
 
   constructor(partial: Partial<CourseDto> = {}) {
     Object.assign(this, partial);

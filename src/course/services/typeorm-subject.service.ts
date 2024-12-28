@@ -6,8 +6,14 @@ import { SubjectEntity } from '@/core/entities/subject-entity';
 import { SubjectDto } from '@/core/models/subject.dto';
 import { SubjectUpdateDto } from '@/core/models/subject-update.dto';
 import { SubjectCreateDto } from '@/core/models/subject-create.dto';
-import { SubjectQueryDto } from '@/core/models/subject-query.dto';
-
+import {
+  CourseDto,
+  CourseQueryDto,
+  CourseStatus,
+  PageDto,
+  QueryDto,
+} from '@/core/models';
+import { CourseEntity } from '@/core/entities/course.entity';
 @Injectable()
 export class TypeormSubjectService {
   constructor(
@@ -25,7 +31,7 @@ export class TypeormSubjectService {
     }
 
     const result = await this.subjectRepo.insert({
-      name: values.name,
+      title: values.title,
       slug: values.slug,
       category: { id: values.categoryId },
     });
@@ -41,7 +47,7 @@ export class TypeormSubjectService {
     }
 
     await this.subjectRepo.update(values.id, {
-      name: values.name,
+      title: values.title,
       slug: values.slug,
       category: { id: values.categoryId },
     });
@@ -80,39 +86,117 @@ export class TypeormSubjectService {
     return entity?.toDto();
   }
 
-  async find(query: SubjectQueryDto): Promise<SubjectDto[]> {
-    const qb = this.subjectRepo
+  async findRelated(slug: string, limit: number): Promise<SubjectDto[]> {
+    const entities = await this.subjectRepo
       .createQueryBuilder('subject')
-      .leftJoinAndSelect('subject.category', 'category');
+      .leftJoinAndSelect('subject.category', 'category')
+      .leftJoinAndSelect('subject.meta', 'meta')
+      .leftJoinAndSelect('subject.authors', 'subject_author')
+      .leftJoinAndSelect('subject_author.author', 'author')
+      .where('subject.slug != :slug', { slug })
+      .andWhere(
+        'subject.subject_id = (SELECT subject_id FROM el_subject WHERE slug = :slug)',
+        { slug },
+      )
+      .andWhere('subject.status = :status', { status: CourseStatus.PUBLISHED })
+      .limit(limit)
+      .getMany();
+
+    return entities.map((e) => e.toDto());
+  }
+
+  async find(query: CourseQueryDto): Promise<PageDto<SubjectDto>> {
+    const { limit, offset } = QueryDto.getPageable(query);
+
+    const baseQuery = this.subjectRepo.createQueryBuilder('subject');
+
+    if (query.status) {
+      baseQuery.andWhere('subject.status = :status', { status: query.status });
+    }
+
+    if (query.access) {
+      baseQuery.andWhere('subject.access = :access', {
+        access: query.access,
+      });
+    }
+
+    if (query.level) {
+      baseQuery.andWhere('subject.level = :level', {
+        level: query.level,
+      });
+    }
+
+    if (query.featured) {
+      baseQuery.andWhere('subject.featured = :featured', {
+        featured: query.featured,
+      });
+    }
+
+    if (query.subject) {
+      baseQuery.andWhere('category.slug = :category', {
+        subject: query.subject,
+      });
+    }
+
+    if (query.author) {
+      baseQuery.andWhere('subject_author.authorId = :authorId', {
+        authorId: query.author,
+      });
+    }
 
     if (query.q) {
-      qb.andWhere(
-        'LOWER(subject.name) LIKE LOWER(:q) OR LOWER(subject.slug) LIKE LOWER(:q)',
-        {
-          q: `%${query.q}%`,
-        },
-      );
+      baseQuery.andWhere('LOWER(subject.title) LIKE LOWER(:title)', {
+        title: `%${query.q}%`,
+      });
     }
 
-    if (query.category) {
-      qb.andWhere(
-        'LOWER(category.slug) = LOWER(:category) OR LOWER(category.name) = LOWER(:category)',
-        {
-          category: query.category,
-        },
-      );
+    let orderBy = 'subject.createdAt';
+    if (query.orderBy === 'enrollment') {
+      orderBy = 'meta.enrolledCount';
+    } else if (query.orderBy === 'publishedAt') {
+      orderBy = 'subject.publishedAt';
     }
 
-    if (query.featured !== undefined) {
-      qb.andWhere('subject.featured = :featured', { featured: query.featured });
+    baseQuery.orderBy(orderBy, 'DESC');
+
+    const idQuery = baseQuery.clone();
+    const dataQuery = baseQuery.clone();
+
+    idQuery
+      .leftJoin('subject.subject', 'subject')
+      .leftJoin('subject.meta', 'meta')
+      .leftJoin('subject.authors', 'subject_author');
+
+    const count = await idQuery.getCount();
+
+    idQuery.select(['subject.id', orderBy]).distinct();
+
+    idQuery.offset(offset).limit(limit);
+
+    const idList = await idQuery.getMany();
+
+    let list: SubjectEntity[] = [];
+
+    if (idList.length > 0) {
+      dataQuery
+        .andWhereInIds(idList.map((e) => e.id))
+        .leftJoinAndSelect('subject.category', 'category')
+        .leftJoinAndSelect('subject.authors', 'subject_author')
+        .leftJoinAndSelect('subject.author', 'author');
+
+      list = await dataQuery.getMany();
     }
 
-    if (query.orderBy) {
-      qb.orderBy(`subject.${query.orderBy}`, 'ASC');
-    } else {
-      qb.orderBy('subject.createdAt', 'DESC');
-    }
+    // const [list, count] = await baseQuery
+    //   .offset(offset)
+    //   .limit(limit)
+    //   .getManyAndCount();
 
-    return (await qb.getMany()).map((subject) => subject.toDto());
+    return PageDto.from({
+      list: list.map((e) => e.toDto()),
+      count: count,
+      offset: offset,
+      limit: limit,
+    });
   }
 }

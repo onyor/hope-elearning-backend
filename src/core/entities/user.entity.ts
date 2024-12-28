@@ -1,4 +1,4 @@
-import { StudentStatus, UserDto, UserRole } from '@/core/models/user.dto';
+import { Title, UserDto, UserRole } from '@/core/models/user.dto';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 import { AuditingEntity } from './auditing.entity';
 
@@ -50,11 +50,12 @@ export class UserEntity extends AuditingEntity {
   expiredAt?: Date | null;
 
   @Column({
+    name: 'title',
     type: 'enum',
-    enum: StudentStatus,
+    enum: Title,
     nullable: true,
   })
-  studentStatus?: StudentStatus | null;
+  title?: Title | null;
 
   toDto() {
     return new UserDto({

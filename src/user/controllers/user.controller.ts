@@ -3,7 +3,7 @@ import {
   CourseDto,
   EnrolledCourseDto,
   QueryDto,
-  StudentStatus,
+  Title,
   UserDto,
   UserMetaDto,
   UserUpdateDto,

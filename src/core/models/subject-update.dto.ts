@@ -1,11 +1,15 @@
 import { ApiHideProperty } from '@nestjs/swagger';
 import {
+  ArrayMinSize,
+  IsArray,
+  IsDateString,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   MaxLength,
-  IsDateString,
 } from 'class-validator';
+import { CourseAccess, CourseLevel } from './course.dto';
 
 export class SubjectUpdateDto {
   @IsNumber()
@@ -13,19 +17,37 @@ export class SubjectUpdateDto {
 
   @IsNotEmpty()
   @MaxLength(2000)
-  name: string;
+  title: string;
 
   @IsNotEmpty()
   @MaxLength(2000)
   slug: string;
 
+  cover?: string;
+
+  excerpt?: string;
+
+  description?: string;
+
+  @IsOptional()
+  @IsEnum(CourseLevel)
+  level?: CourseLevel;
+
+  @IsOptional()
+  @IsEnum(CourseAccess)
+  access?: CourseAccess;
+
   @IsNumber()
   categoryId: number;
 
   @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1, { message: 'Required at least one author' })
+  authors?: string[];
+
   @IsDateString()
-  updatedAt?: string;
+  updatedAt: string;
 
   @ApiHideProperty()
-  updatedBy?: string;
+  updatedBy: string;
 }

@@ -1,5 +1,5 @@
 import { ApiOkResponsePaginated, Roles } from '@/common/decorators';
-import { StudentStatus, UserDto, UserQueryDto, UserRole } from '@/core/models';
+import { Title, UserDto, UserQueryDto, UserRole } from '@/core/models';
 import { SecurityContextService } from '@/core/security/security-context.service';
 import { USER_SERVICE, UserService } from '@/core/services';
 import {
@@ -42,11 +42,11 @@ export class UserAdminController {
     await this.userService.updateRole(userId, role);
   }
 
-  @Get('student-status-list')
+  @Get('title-list')
   @ApiOperation({
-    summary: 'Get all available student statuses and current status',
+    summary: 'Get all available title and current status',
   })
-  async getStudentStatusess() {
+  async getTitleess() {
     // Kullanıcıyı güvenlik bağlamından al
     const user = this.security.getAuthenticatedUser();
     if (!user) {
@@ -54,18 +54,18 @@ export class UserAdminController {
     }
 
     // Kullanıcının mevcut durumunu al
-    const currentStatus = await this.userService.getStudentStatus(user.id);
+    const currentStatus = await this.userService.getTitle(user.id);
 
     // Mevcut durum ve tüm durumların listesi
     return {
-      statuses: Object.values(StudentStatus),
+      statuses: Object.values(Title),
       currentStatus,
     };
   }
 
-  @Put('student-status')
-  @ApiOperation({ summary: 'Update student status of the authenticated user' })
-  async updateStudentStatus(@Body('status') studentStatus: StudentStatus) {
+  @Put('title')
+  @ApiOperation({ summary: 'Update title of the authenticated user' })
+  async updateTitle(@Body('status') title: Title) {
     // Kullanıcıyı güvenlik bağlamından al
     const user = this.security.getAuthenticatedUser();
     if (!user) {
@@ -73,12 +73,12 @@ export class UserAdminController {
     }
 
     // Kullanıcının mevcut durumunu güncelle
-    await this.userService.updateStudentStatus(user.id, studentStatus);
+    await this.userService.updateTitle(user.id, title);
 
     return {
       message: 'Student status updated successfully',
       userId: user.id,
-      updatedStatus: studentStatus,
+      updatedStatus: title,
     };
   }
 }
