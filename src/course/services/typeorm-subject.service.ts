@@ -90,7 +90,6 @@ export class TypeormSubjectService {
     const entities = await this.subjectRepo
       .createQueryBuilder('subject')
       .leftJoinAndSelect('subject.category', 'category')
-      .leftJoinAndSelect('subject.meta', 'meta')
       .leftJoinAndSelect('subject.authors', 'subject_author')
       .leftJoinAndSelect('subject_author.author', 'author')
       .where('subject.slug != :slug', { slug })
@@ -151,9 +150,7 @@ export class TypeormSubjectService {
     }
 
     let orderBy = 'subject.createdAt';
-    if (query.orderBy === 'enrollment') {
-      orderBy = 'meta.enrolledCount';
-    } else if (query.orderBy === 'publishedAt') {
+    if (query.orderBy === 'publishedAt') {
       orderBy = 'subject.publishedAt';
     }
 
@@ -163,8 +160,7 @@ export class TypeormSubjectService {
     const dataQuery = baseQuery.clone();
 
     idQuery
-      .leftJoin('subject.subject', 'subject')
-      .leftJoin('subject.meta', 'meta')
+      .leftJoin('subject.category', 'category')
       .leftJoin('subject.authors', 'subject_author');
 
     const count = await idQuery.getCount();
@@ -180,13 +176,10 @@ export class TypeormSubjectService {
     if (idList.length > 0) {
       dataQuery
         .andWhereInIds(idList.map((e) => e.id))
-        .leftJoinAndSelect('subject.category', 'category')
-        .leftJoinAndSelect('subject.authors', 'subject_author')
-        .leftJoinAndSelect('subject.author', 'author');
+        .leftJoinAndSelect('subject.category', 'category'); // Sadece bunu deneyin
 
       list = await dataQuery.getMany();
     }
-
     // const [list, count] = await baseQuery
     //   .offset(offset)
     //   .limit(limit)
